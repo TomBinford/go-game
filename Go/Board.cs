@@ -8,17 +8,11 @@ using System.Threading.Tasks;
 
 namespace Go
 {
-    enum IntersectionState
-    {
-        Empty,
-        White,
-        Black
-    }
-
     class Board : IDrawable
     {
         public Color Color;
         public Rectangle Bounds { get; }
+        public int NumLines;
         private Line[] horizontalLines;
         private Line[] verticalLines;
 
@@ -30,6 +24,7 @@ namespace Go
             }
 
             Bounds = bounds;
+            NumLines = numLines;
             Color = boardColor;
             horizontalLines = new Line[numLines];
             verticalLines = new Line[numLines];
@@ -51,6 +46,25 @@ namespace Go
                 verticalLines[i] = line;
                 x += xSpacing;
             }
+        }
+
+        public bool Contains(Point intersection)
+        {
+            return 0 <= intersection.X && intersection.X < NumLines && 0 <= intersection.Y && intersection.Y < NumLines;
+        }
+
+        public Point ClosestIntersection(Vector2 position)
+        {
+            int x = (int)Math.Round((position.X - Bounds.X) / (Bounds.Width / NumLines) - 0.5f);
+            int y = (int)Math.Round((position.Y - Bounds.Y) / (Bounds.Height / NumLines) - 0.5f);
+            return new Point(x, y);
+        }
+
+        public Vector2 IntersectionPosition(Point intersection)
+        {
+            float x = Bounds.X + (float)Bounds.Width / NumLines * (intersection.X + 0.5f);
+            float y = Bounds.Y + (float)Bounds.Height / NumLines * (intersection.Y + 0.5f);
+            return new Vector2(x, y);
         }
 
         public void Draw(SpriteBatch spriteBatch)

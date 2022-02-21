@@ -7,16 +7,17 @@ using System.Threading.Tasks;
 
 namespace Go
 {
+    enum IntersectionState
+    {
+        Empty,
+        White,
+        Black
+    }
+
     struct BoardState
     {
         private IntersectionState[,] state;
-        public IntersectionState this[int x, int y]
-        {
-            get
-            {
-                return state[y, x];
-            }
-        }
+        public IntersectionState this[int x, int y] => state[y, x]; //row, column
         public IntersectionState this[Point point] => this[point.X, point.Y];
 
         public BoardState(int numLines)

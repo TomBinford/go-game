@@ -43,7 +43,7 @@ namespace Go
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            board = new Board(new Rectangle(50, 50, 270, 270), 9, Color.BurlyWood, Color.Black, 2);
+            board = new Board(new Rectangle(50, 50, 9 * 40, 9 * 40), 9, Color.BurlyWood, Color.Black, 2);
         }
 
         protected override void UnloadContent()
@@ -71,6 +71,11 @@ namespace Go
 
             // TODO: Add your drawing code here
             spriteBatch.Draw(board);
+            Point closestIntersection = board.ClosestIntersection(State.CurrentMouseState.Position.ToVector2());
+            if (board.Contains(closestIntersection))
+            {
+                spriteBatch.Draw(Pixel, board.IntersectionPosition(closestIntersection), null, Color.Red, 0f, new Vector2(0.5f), 10f, SpriteEffects.None, 0);
+            }
 
             spriteBatch.End();
             base.Draw(gameTime);
