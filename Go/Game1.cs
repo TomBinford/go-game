@@ -13,7 +13,7 @@ namespace Go
         public static Texture2D Pixel => _pixel;
 
         public static GameState State;
-        Line line;
+        Board board;
 
         static Game1()
         {
@@ -43,7 +43,7 @@ namespace Go
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            line = new Line(new Vector2(100, 100), new Vector2(50, 200), Color.Black, 1);
+            board = new Board(new Rectangle(50, 50, 270, 270), 9, Color.BurlyWood, Color.Black, 2);
         }
 
         protected override void UnloadContent()
@@ -70,9 +70,7 @@ namespace Go
             spriteBatch.Begin();
 
             // TODO: Add your drawing code here
-            spriteBatch.Draw(line);
-            spriteBatch.Draw(Pixel, line.A, null, Color.Red, 0, new Vector2(0.5f), 5f, SpriteEffects.None, 0);
-            spriteBatch.Draw(Pixel, line.B, null, Color.Green, 0, new Vector2(0.5f), 5f, SpriteEffects.None, 0);
+            spriteBatch.Draw(board);
 
             spriteBatch.End();
             base.Draw(gameTime);
