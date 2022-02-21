@@ -12,7 +12,8 @@ namespace Go
     {
         public Color Color;
         public Rectangle Bounds { get; }
-        public int NumLines;
+        public int NumLines { get; }
+        public BoardState State;
         private Line[] horizontalLines;
         private Line[] verticalLines;
 
@@ -23,8 +24,10 @@ namespace Go
                 throw new ArgumentException("Board dimensions are invalid");
             }
 
-            Bounds = bounds;
             NumLines = numLines;
+            State = new BoardState(numLines);
+
+            Bounds = bounds;
             Color = boardColor;
             horizontalLines = new Line[numLines];
             verticalLines = new Line[numLines];
@@ -66,6 +69,7 @@ namespace Go
             float y = Bounds.Y + (float)Bounds.Height / NumLines * (intersection.Y + 0.5f);
             return new Vector2(x, y);
         }
+        public Vector2 IntersectionPosition(int x, int y) => IntersectionPosition(new Point(x, y));
 
         public void Draw(SpriteBatch spriteBatch)
         {
@@ -77,6 +81,20 @@ namespace Go
             foreach (Line line in verticalLines)
             {
                 spriteBatch.Draw(line);
+            }
+
+            for (int x = 0; x < NumLines; x++)
+            {
+                for (int y = 0; y < NumLines; y++)
+                {
+                    bool white = State[x, y] == IntersectionState.White;
+                    bool black = State[x, y] == IntersectionState.Black;
+                    if (white || black)
+                    {
+                        Color stoneColor = white ? Color.White : Color.Black;
+                        spriteBatch.Draw(Game1.Pixel, IntersectionPosition(x, y), null, stoneColor, 0f, new Vector2(0.5f), 10f, SpriteEffects.None, 0);
+                    }
+                }
             }
         }
     }

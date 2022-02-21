@@ -18,7 +18,7 @@ namespace Go
     {
         private IntersectionState[,] state;
         public IntersectionState this[int x, int y] => state[y, x]; //row, column
-        public IntersectionState this[Point point] => this[point.X, point.Y];
+        public IntersectionState this[Point intersection] => this[intersection.X, intersection.Y];
 
         public BoardState(int numLines)
         {
