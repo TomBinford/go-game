@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Go
 {
-    class BoardState
+    struct BoardState
     {
         private IntersectionState[,] state;
         public IntersectionState this[int x, int y]
