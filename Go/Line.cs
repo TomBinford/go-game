@@ -27,9 +27,9 @@ namespace Go
         {
             Vector2 delta = B - A;
             float distance = delta.Length();
-            float heading = (float)Math.Atan2(delta.Y, delta.X) - MathHelper.PiOver2;
-            Vector2 origin = new Vector2(0.5f, 0); //Rotate the line about one edge of the pixel
-            spritebatch.Draw(Game1.Pixel, A, null, Color, heading, origin, new Vector2(Thickness, distance), SpriteEffects.None, 0);
+            float heading = (float)Math.Atan2(delta.Y, delta.X);
+            Vector2 origin = new Vector2(0, 0.5f); //Rotate the line about one edge of the pixel
+            spritebatch.Draw(Game1.Pixel, A, null, Color, heading, origin, new Vector2(distance, Thickness), SpriteEffects.None, 0);
         }
     }
 }
