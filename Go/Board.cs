@@ -25,7 +25,7 @@ namespace Go
             }
 
             NumLines = numLines;
-            State = new BoardState(numLines, firstPlayer: Player.White);
+            State = new BoardState(numLines, firstPlayer: Player.Black);
 
             Bounds = bounds;
             Color = boardColor;
@@ -33,28 +33,29 @@ namespace Go
             verticalLines = new Line[numLines];
 
             float ySpacing = (float)bounds.Height / numLines;
-            float y = bounds.Y + ySpacing / 2;
+            Vector2 left = new Vector2(bounds.Left, bounds.Y + ySpacing / 2);
+            Vector2 right = new Vector2(bounds.Right, bounds.Y + ySpacing / 2);
             for (int i = 0; i < numLines; i++)
             {
-                Line line = new Line(new Vector2(bounds.Left, y), new Vector2(bounds.Right, y), lineColor, lineThickness);
+                Line line = new Line(left, right, lineColor, lineThickness);
                 horizontalLines[i] = line;
-                y += ySpacing;
+                left.Y += ySpacing;
+                right.Y += ySpacing;
             }
 
             float xSpacing = (float)bounds.Width / numLines;
-            float x = bounds.X + xSpacing / 2;
+            Vector2 top = new Vector2(bounds.X + xSpacing / 2, bounds.Top);
+            Vector2 bottom = new Vector2(bounds.X + xSpacing / 2, bounds.Bottom);
             for (int i = 0; i < numLines; i++)
             {
-                Line line = new Line(new Vector2(x, bounds.Top), new Vector2(x, bounds.Bottom), lineColor, lineThickness);
+                Line line = new Line(top, bottom, lineColor, lineThickness);
                 verticalLines[i] = line;
-                x += xSpacing;
+                top.X += xSpacing;
+                bottom.X += xSpacing;
             }
         }
 
-        public bool Contains(Point intersection)
-        {
-            return State.Contains(intersection);
-        }
+        public bool Contains(Point intersection) => State.Contains(intersection);
 
         public Point ClosestIntersection(Vector2 position)
         {

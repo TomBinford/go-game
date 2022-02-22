@@ -22,7 +22,7 @@ namespace Go
 
     struct BoardState
     {
-        private IntersectionState[,] state;
+        private readonly IntersectionState[,] state;
         public IntersectionState this[int x, int y] => state[y, x]; //row, column
         public IntersectionState this[Point intersection] => this[intersection.X, intersection.Y];
 
@@ -37,13 +37,35 @@ namespace Go
         public BoardState(int numLines, Player firstPlayer)
             : this(new IntersectionState[numLines, numLines], firstPlayer)
         {
-            state[4, 2] = IntersectionState.Black;
-            state[1, 4] = IntersectionState.Black;
-            state[6, 2] = IntersectionState.Black;
-            state[1, 2] = IntersectionState.White;
-            state[6, 5] = IntersectionState.White;
-            state[3, 3] = IntersectionState.White;
+            //state[4, 2] = IntersectionState.Black;
+            //state[1, 4] = IntersectionState.Black;
+            //state[6, 2] = IntersectionState.Black;
+            //state[1, 2] = IntersectionState.White;
+            //state[6, 5] = IntersectionState.White;
+            //state[3, 3] = IntersectionState.White;
         }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is BoardState other)
+            {
+                if (CurrentPlayer != other.CurrentPlayer)
+                {
+                    return false;
+                }
+                return CurrentPlayer == other.CurrentPlayer &&
+                    state.Cast<IntersectionState>().SequenceEqual(other.state.Cast<IntersectionState>());
+            }
+            return false;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(CurrentPlayer, state);
+        }
+
+        public static bool operator ==(BoardState a, BoardState b) => a.Equals(b);
+        public static bool operator !=(BoardState a, BoardState b) => !a.Equals(b);
 
         public bool Contains(Point intersection)
         {

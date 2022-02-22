@@ -4,7 +4,7 @@ namespace Go
 {
     interface IDrawable
     {
-        void Draw(SpriteBatch spritebatch);
+        void Draw(SpriteBatch spriteBatch);
     }
 
     static class IDrawableExtensions

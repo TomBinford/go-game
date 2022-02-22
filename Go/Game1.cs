@@ -15,6 +15,8 @@ namespace Go
         public static GameState State;
         Board board;
 
+        SpriteFont font;
+
         static Game1()
         {
             State = new GameState();
@@ -46,6 +48,7 @@ namespace Go
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
+            font = Content.Load<SpriteFont>("Font");
             board = new Board(new Rectangle(50, 50, 9 * 80, 9 * 80), 9, Color.BurlyWood, Color.Black, 2);
         }
 
@@ -82,8 +85,10 @@ namespace Go
             Point closestIntersection = board.ClosestIntersection(State.CurrentMouseState.Position.ToVector2());
             if (board.Contains(closestIntersection))
             {
-                spriteBatch.Draw(Pixel, board.IntersectionPosition(closestIntersection), null, Color.Red, 0f, new Vector2(0.5f), 10f, SpriteEffects.None, 0);
+                spriteBatch.Draw(Pixel, board.IntersectionPosition(closestIntersection), null, Color.Red, 0, new Vector2(0.5f), 10f, SpriteEffects.None, 0);
             }
+
+            spriteBatch.DrawString(font, $"{board.State.CurrentPlayer} to move", new Vector2(board.Bounds.Right + 50, board.Bounds.Top), Color.Pink, 0, Vector2.Zero, 1.5f, SpriteEffects.None, 0);
 
             spriteBatch.End();
             base.Draw(gameTime);
