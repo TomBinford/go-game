@@ -14,8 +14,8 @@ namespace Go
         public Rectangle Bounds { get; }
         public int NumLines { get; }
         public BoardState State;
-        private Line[] horizontalLines;
-        private Line[] verticalLines;
+        private Line[] horizontalLines { get; }
+        private Line[] verticalLines { get; }
 
         public Board(Rectangle bounds, int numLines, Color boardColor, Color lineColor, float lineThickness)
         {
@@ -25,7 +25,7 @@ namespace Go
             }
 
             NumLines = numLines;
-            State = new BoardState(numLines);
+            State = new BoardState(numLines, firstPlayer: Player.White);
 
             Bounds = bounds;
             Color = boardColor;
@@ -53,7 +53,7 @@ namespace Go
 
         public bool Contains(Point intersection)
         {
-            return 0 <= intersection.X && intersection.X < NumLines && 0 <= intersection.Y && intersection.Y < NumLines;
+            return State.Contains(intersection);
         }
 
         public Point ClosestIntersection(Vector2 position)

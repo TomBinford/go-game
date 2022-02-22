@@ -30,9 +30,12 @@ namespace Go
         {
             // TODO: Add your initialization logic here
             graphics.PreferMultiSampling = true; //Enable anti-aliasing
+            IsMouseVisible = true;
+            graphics.PreferredBackBufferWidth = graphics.GraphicsDevice.Viewport.Width * 2;
+            graphics.PreferredBackBufferHeight = graphics.GraphicsDevice.Viewport.Height * 2;
+
             _pixel = new Texture2D(graphics.GraphicsDevice, 1, 1);
             _pixel.SetData(new[] { Color.White });
-            IsMouseVisible = true;
 
             graphics.ApplyChanges();
             base.Initialize();
@@ -43,7 +46,7 @@ namespace Go
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
             // TODO: use this.Content to load your game content here
-            board = new Board(new Rectangle(50, 50, 9 * 40, 9 * 40), 9, Color.BurlyWood, Color.Black, 2);
+            board = new Board(new Rectangle(50, 50, 9 * 80, 9 * 80), 9, Color.BurlyWood, Color.Black, 2);
         }
 
         protected override void UnloadContent()
@@ -60,6 +63,11 @@ namespace Go
             State.Update();
 
             // TODO: Add your update logic here
+            if (State.LeftClick())
+            {
+                Point intersection = board.ClosestIntersection(State.CurrentMouseState.Position.ToVector2());
+                board.State = board.State.MakePlay(intersection) ?? board.State;
+            }
 
             base.Update(gameTime);
         }
