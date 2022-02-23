@@ -8,14 +8,15 @@ namespace Go
     {
         GraphicsDeviceManager graphics;
         SpriteBatch spriteBatch;
+        public static GameState State;
 
         private static Texture2D _pixel;
         public static Texture2D Pixel => _pixel;
 
-        public static GameState State;
-        Board board;
-
         SpriteFont font;
+
+        Board board;
+        Label playerTurnLabel;
 
         static Game1()
         {
@@ -50,6 +51,7 @@ namespace Go
             // TODO: use this.Content to load your game content here
             font = Content.Load<SpriteFont>("Font");
             board = new Board(new Rectangle(50, 50, 9 * 80, 9 * 80), 9, Color.BurlyWood, Color.Black, 2);
+            playerTurnLabel = new Label(font, "Player to move", new Vector2(board.Bounds.Right + 50, board.Bounds.Top), Color.Pink, 1.5f);
         }
 
         protected override void UnloadContent()
@@ -69,8 +71,14 @@ namespace Go
             if (State.LeftClick())
             {
                 Point intersection = board.ClosestIntersection(State.CurrentMouseState.Position.ToVector2());
-                board.State = board.State.MakePlay(intersection) ?? board.State;
+                BoardState? nextState = board.State.MakePlay(intersection);
+                if(nextState.HasValue)
+                {
+                    board.State = nextState.Value;
+                }
             }
+
+            playerTurnLabel.Text = $"{board.State.CurrentPlayer} to move";
 
             base.Update(gameTime);
         }
@@ -88,8 +96,8 @@ namespace Go
                 spriteBatch.Draw(Pixel, board.IntersectionPosition(closestIntersection), null, Color.Red, 0, new Vector2(0.5f), 10f, SpriteEffects.None, 0);
             }
 
-            spriteBatch.DrawString(font, $"{board.State.CurrentPlayer} to move", new Vector2(board.Bounds.Right + 50, board.Bounds.Top), Color.Pink, 0, Vector2.Zero, 1.5f, SpriteEffects.None, 0);
-
+            spriteBatch.Draw(playerTurnLabel);
+            
             spriteBatch.End();
             base.Draw(gameTime);
         }
