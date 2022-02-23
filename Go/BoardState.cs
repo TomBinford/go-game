@@ -45,12 +45,6 @@ namespace Go
         public BoardState(int numLines, Player firstPlayer)
             : this(null, new Stone[numLines, numLines], firstPlayer)
         {
-            //state[4, 2] = IntersectionState.Black;
-            //state[1, 4] = IntersectionState.Black;
-            //state[6, 2] = IntersectionState.Black;
-            //state[1, 2] = IntersectionState.White;
-            //state[6, 5] = IntersectionState.White;
-            //state[3, 3] = IntersectionState.White;
         }
 
         public override bool Equals(object obj)
@@ -118,7 +112,7 @@ namespace Go
             return newBoardState;
         }
 
-        public List<StoneGroup> StoneGroups()
+        public List<StoneGroup> StoneGroups(bool includeEmpty)
         {
             Stone[,] state = this.state; //Reference to state to let the inner function work
             bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
@@ -148,7 +142,7 @@ namespace Go
             {
                 for (int col = state.GetLowerBound(1); col < state.GetUpperBound(1); col++)
                 {
-                    if (state[row, col] != Stone.Empty)
+                    if (includeEmpty || state[row, col] != Stone.Empty)
                     {
                         StoneGroup group = new StoneGroup(state[row, col], new List<Point>());
                         DFS(row, col, group);
