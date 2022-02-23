@@ -110,12 +110,56 @@ namespace Go
             for (BoardStateNode node = newBoardState.Previous; node != null; node = node.Previous)
             {
                 //repetition of a previous state is not allowed
-                if (node.State.CurrentPlayer == CurrentPlayer && newState.Equals(node.State.state))
+                if (node.State.Equals(newState))
                 {
                     return null;
                 }
             }
             return newBoardState;
+        }
+
+        public List<StoneGroup> StoneGroups()
+        {
+            Stone[,] state = this.state; //Reference to state to let the inner function work
+            bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
+
+            void DFS(int row, int col, StoneGroup group)
+            {
+                if (row < 0 || row > state.GetLength(0) || col < 0 || col > state.GetLength(1))
+                {
+                    return;
+                }
+                if (!visited[row, col])
+                {
+                    if (state[row, col] == group.Stone)
+                    {
+                        visited[row, col] = true;
+                        group.Intersections.Add(new Point(col, row)); //row is y, col is x
+                        DFS(row - 1, col, group);
+                        DFS(row + 1, col, group);
+                        DFS(row, col - 1, group);
+                        DFS(row, col + 1, group);
+                    }
+                }
+            }
+
+            List<StoneGroup> groups = new List<StoneGroup>();
+            for (int row = state.GetLowerBound(0); row < state.GetUpperBound(0); row++)
+            {
+                for (int col = state.GetLowerBound(1); col < state.GetUpperBound(1); col++)
+                {
+                    if (state[row, col] != Stone.Empty)
+                    {
+                        StoneGroup group = new StoneGroup(state[row, col], new List<Point>());
+                        DFS(row, col, group);
+                        if (group.Intersections.Count > 0)
+                        {
+                            groups.Add(group);
+                        }
+                    }
+                }
+            }
+            return groups;
         }
     }
 }

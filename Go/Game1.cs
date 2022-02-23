@@ -70,7 +70,7 @@ namespace Go
             State.Update();
 
             // TODO: Add your update logic here
-            if(passLabel.LeftClicked())
+            if (passLabel.LeftClicked())
             {
                 board.State = board.State.MakePlay(Play.Pass()) ?? board.State;
             }
@@ -78,13 +78,14 @@ namespace Go
             {
                 Point intersection = board.ClosestIntersection(State.CurrentMouseState.Position.ToVector2());
                 BoardState? nextState = board.State.MakePlay(Play.Move(intersection));
-                if(nextState.HasValue)
+                if (nextState.HasValue)
                 {
                     board.State = nextState.Value;
                 }
             }
 
-            playerTurnLabel.Text = $"{board.State.CurrentPlayer} to move";
+            //playerTurnLabel.Text = $"{board.State.CurrentPlayer} to move";
+            playerTurnLabel.Text = $"{board.State.StoneGroups().Count} stone groups";
 
             base.Update(gameTime);
         }
@@ -104,7 +105,7 @@ namespace Go
 
             spriteBatch.Draw(playerTurnLabel);
             spriteBatch.Draw(passLabel);
-            
+
             spriteBatch.End();
             base.Draw(gameTime);
         }
