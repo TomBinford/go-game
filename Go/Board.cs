@@ -88,8 +88,8 @@ namespace Go
             {
                 for (int y = 0; y < NumLines; y++)
                 {
-                    bool white = State[x, y] == IntersectionState.White;
-                    bool black = State[x, y] == IntersectionState.Black;
+                    bool white = State[x, y] == Stone.White;
+                    bool black = State[x, y] == Stone.Black;
                     if (white || black)
                     {
                         Color stoneColor = white ? Color.White : Color.Black;

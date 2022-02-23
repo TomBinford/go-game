@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Go
 {
-    enum IntersectionState
+    enum Stone
     {
         Empty,
         White,
@@ -16,8 +16,9 @@ namespace Go
 
     enum Player
     {
-        White = IntersectionState.White,
-        Black = IntersectionState.Black
+        None,
+        White = Stone.White,
+        Black = Stone.Black
     }
 
     class BoardStateNode
@@ -35,13 +36,13 @@ namespace Go
     struct BoardState
     {
         public BoardStateNode Previous { get; }
-        private readonly IntersectionState[,] state;
-        public IntersectionState this[int x, int y] => state[y, x]; //row, column
-        public IntersectionState this[Point intersection] => this[intersection.X, intersection.Y];
+        private readonly Stone[,] state;
+        public Stone this[int x, int y] => state[y, x]; //row, column
+        public Stone this[Point intersection] => this[intersection.X, intersection.Y];
 
         public Player CurrentPlayer { get; }
 
-        private BoardState(BoardStateNode previous, IntersectionState[,] state, Player player)
+        private BoardState(BoardStateNode previous, Stone[,] state, Player player)
         {
             Previous = previous;
             this.state = state;
@@ -49,7 +50,7 @@ namespace Go
         }
 
         public BoardState(int numLines, Player firstPlayer)
-            : this(null, new IntersectionState[numLines, numLines], firstPlayer)
+            : this(null, new Stone[numLines, numLines], firstPlayer)
         {
             //state[4, 2] = IntersectionState.Black;
             //state[1, 4] = IntersectionState.Black;
@@ -68,7 +69,7 @@ namespace Go
                     return false;
                 }
                 return CurrentPlayer == other.CurrentPlayer &&
-                    state.Cast<IntersectionState>().SequenceEqual(other.state.Cast<IntersectionState>());
+                    state.Cast<Stone>().SequenceEqual(other.state.Cast<Stone>());
             }
             return false;
         }
@@ -87,7 +88,7 @@ namespace Go
         {
             if(play is PassPlay)
             {
-                IntersectionState[,] newState = new IntersectionState[state.GetLength(0), state.GetLength(1)];
+                Stone[,] newState = new Stone[state.GetLength(0), state.GetLength(1)];
                 Array.Copy(state, newState, state.Length);
                 Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
                 return new BoardState(new BoardStateNode(this), newState, nextPlayer);
@@ -105,13 +106,13 @@ namespace Go
         private BoardState? MakeMove(MovePlay move)
         {
             Point intersection = move.Intersection;
-            if (!Contains(intersection) || this[intersection] != IntersectionState.Empty)
+            if (!Contains(intersection) || this[intersection] != Stone.Empty)
             {
                 return null;
             }
-            IntersectionState[,] newState = new IntersectionState[state.GetLength(0), state.GetLength(1)];
+            Stone[,] newState = new Stone[state.GetLength(0), state.GetLength(1)];
             Array.Copy(state, newState, state.Length);
-            newState[intersection.Y, intersection.X] = (IntersectionState)CurrentPlayer;
+            newState[intersection.Y, intersection.X] = (Stone)CurrentPlayer;
             Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
             BoardState newBoardState = new BoardState(new BoardStateNode(this), newState, nextPlayer);
 
@@ -123,8 +124,8 @@ namespace Go
                 if (node.State.CurrentPlayer == CurrentPlayer)
                 {
                     if (Enumerable.SequenceEqual(
-                        newBoardState.state.Cast<IntersectionState>(),
-                        node.State.state.Cast<IntersectionState>()))
+                        newBoardState.state.Cast<Stone>(),
+                        node.State.state.Cast<Stone>()))
                     {
                         return null;
                     }
