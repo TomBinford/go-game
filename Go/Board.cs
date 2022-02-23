@@ -88,11 +88,9 @@ namespace Go
             {
                 for (int y = 0; y < NumLines; y++)
                 {
-                    bool white = State[x, y] == Stone.White;
-                    bool black = State[x, y] == Stone.Black;
-                    if (white || black)
+                    if (State[x, y] != Stone.Empty)
                     {
-                        Color stoneColor = white ? Color.White : Color.Black;
+                        Color stoneColor = State[x, y] == Stone.White ? Color.White : Color.Black;
                         spriteBatch.Draw(Game1.Pixel, IntersectionPosition(x, y), null, stoneColor, 0f, new Vector2(0.5f), 10f, SpriteEffects.None, 0);
                     }
                 }

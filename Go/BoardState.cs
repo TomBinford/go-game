@@ -7,13 +7,6 @@ using System.Threading.Tasks;
 
 namespace Go
 {
-    enum Stone
-    {
-        Empty,
-        White,
-        Black
-    }
-
     enum Player
     {
         None,
@@ -68,8 +61,7 @@ namespace Go
                 {
                     return false;
                 }
-                return CurrentPlayer == other.CurrentPlayer &&
-                    state.Cast<Stone>().SequenceEqual(other.state.Cast<Stone>());
+                return CurrentPlayer == other.CurrentPlayer && state.Equals(other.state);
             }
             return false;
         }
@@ -86,14 +78,12 @@ namespace Go
 
         public BoardState? MakePlay(Play play)
         {
-            if(play is PassPlay)
+            if (play is PassPlay)
             {
-                Stone[,] newState = new Stone[state.GetLength(0), state.GetLength(1)];
-                Array.Copy(state, newState, state.Length);
                 Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
-                return new BoardState(new BoardStateNode(this), newState, nextPlayer);
+                return new BoardState(new BoardStateNode(this), state.DeepCopy(), nextPlayer);
             }
-            else if(play is MovePlay move)
+            else if (play is MovePlay move)
             {
                 return MakeMove(move);
             }
@@ -110,8 +100,7 @@ namespace Go
             {
                 return null;
             }
-            Stone[,] newState = new Stone[state.GetLength(0), state.GetLength(1)];
-            Array.Copy(state, newState, state.Length);
+            Stone[,] newState = state.DeepCopy();
             newState[intersection.Y, intersection.X] = (Stone)CurrentPlayer;
             Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
             BoardState newBoardState = new BoardState(new BoardStateNode(this), newState, nextPlayer);
@@ -121,14 +110,9 @@ namespace Go
             for (BoardStateNode node = newBoardState.Previous; node != null; node = node.Previous)
             {
                 //repetition of a previous state is not allowed
-                if (node.State.CurrentPlayer == CurrentPlayer)
+                if (node.State.CurrentPlayer == CurrentPlayer && newState.Equals(node.State.state))
                 {
-                    if (Enumerable.SequenceEqual(
-                        newBoardState.state.Cast<Stone>(),
-                        node.State.state.Cast<Stone>()))
-                    {
-                        return null;
-                    }
+                    return null;
                 }
             }
             return newBoardState;
