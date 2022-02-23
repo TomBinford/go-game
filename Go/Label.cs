@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -32,6 +33,11 @@ namespace Go
         public void Draw(SpriteBatch spriteBatch)
         {
             spriteBatch.DrawString(Font, Text, Position, Color, 0, Vector2.Zero, Scale, SpriteEffects.None, 0);
+        }
+
+        public bool LeftClicked()
+        {
+            return Game1.State.LeftClick() && Bounds.Contains(Game1.State.CurrentMouseState.Position);
         }
     }
 }

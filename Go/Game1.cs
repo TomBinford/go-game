@@ -17,6 +17,7 @@ namespace Go
 
         Board board;
         Label playerTurnLabel;
+        Label passLabel;
 
         static Game1()
         {
@@ -52,6 +53,7 @@ namespace Go
             font = Content.Load<SpriteFont>("Font");
             board = new Board(new Rectangle(50, 50, 9 * 80, 9 * 80), 9, Color.BurlyWood, Color.Black, 2);
             playerTurnLabel = new Label(font, "Player to move", new Vector2(board.Bounds.Right + 50, board.Bounds.Top), Color.Pink, 1.5f);
+            passLabel = new Label(font, "Pass", new Vector2(board.Bounds.Right + 50, board.Bounds.Bottom - 50), Color.Cornsilk, 1f);
         }
 
         protected override void UnloadContent()
@@ -68,7 +70,11 @@ namespace Go
             State.Update();
 
             // TODO: Add your update logic here
-            if (State.LeftClick())
+            if(passLabel.LeftClicked())
+            {
+                board.State = board.State.MakePlay(Play.Pass()) ?? board.State;
+            }
+            else if (State.LeftClick())
             {
                 Point intersection = board.ClosestIntersection(State.CurrentMouseState.Position.ToVector2());
                 BoardState? nextState = board.State.MakePlay(Play.Move(intersection));
@@ -97,6 +103,7 @@ namespace Go
             }
 
             spriteBatch.Draw(playerTurnLabel);
+            spriteBatch.Draw(passLabel);
             
             spriteBatch.End();
             base.Draw(gameTime);
