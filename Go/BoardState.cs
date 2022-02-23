@@ -20,22 +20,36 @@ namespace Go
         Black = IntersectionState.Black
     }
 
+    class BoardStateNode
+    {
+        public BoardState State { get; }
+        public BoardStateNode Previous { get; }
+
+        public BoardStateNode(BoardState state)
+        {
+            State = state;
+            Previous = state.Previous;
+        }
+    }
+
     struct BoardState
     {
+        public BoardStateNode Previous { get; }
         private readonly IntersectionState[,] state;
         public IntersectionState this[int x, int y] => state[y, x]; //row, column
         public IntersectionState this[Point intersection] => this[intersection.X, intersection.Y];
 
-        public Player CurrentPlayer { get; private set; }
+        public Player CurrentPlayer { get; }
 
-        private BoardState(IntersectionState[,] state, Player player)
+        private BoardState(BoardStateNode previous, IntersectionState[,] state, Player player)
         {
+            Previous = previous;
             this.state = state;
             CurrentPlayer = player;
         }
 
         public BoardState(int numLines, Player firstPlayer)
-            : this(new IntersectionState[numLines, numLines], firstPlayer)
+            : this(null, new IntersectionState[numLines, numLines], firstPlayer)
         {
             //state[4, 2] = IntersectionState.Black;
             //state[1, 4] = IntersectionState.Black;
@@ -59,10 +73,7 @@ namespace Go
             return false;
         }
 
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(CurrentPlayer, state);
-        }
+        public override int GetHashCode() => HashCode.Combine(CurrentPlayer, state);
 
         public static bool operator ==(BoardState a, BoardState b) => a.Equals(b);
         public static bool operator !=(BoardState a, BoardState b) => !a.Equals(b);
@@ -72,8 +83,28 @@ namespace Go
             return 0 <= intersection.X && intersection.X < state.GetLength(1) && 0 <= intersection.Y && intersection.Y < state.GetLength(0);
         }
 
-        public BoardState? MakePlay(Point intersection)
+        public BoardState? MakePlay(Play play)
         {
+            if(play is PassPlay)
+            {
+                IntersectionState[,] newState = new IntersectionState[state.GetLength(0), state.GetLength(1)];
+                Array.Copy(state, newState, state.Length);
+                Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
+                return new BoardState(new BoardStateNode(this), newState, nextPlayer);
+            }
+            else if(play is MovePlay move)
+            {
+                return MakeMove(move);
+            }
+            else
+            {
+                throw new InvalidOperationException();
+            }
+        }
+
+        private BoardState? MakeMove(MovePlay move)
+        {
+            Point intersection = move.Intersection;
             if (!Contains(intersection) || this[intersection] != IntersectionState.Empty)
             {
                 return null;
@@ -82,7 +113,24 @@ namespace Go
             Array.Copy(state, newState, state.Length);
             newState[intersection.Y, intersection.X] = (IntersectionState)CurrentPlayer;
             Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
-            return new BoardState(newState, nextPlayer);
+            BoardState newBoardState = new BoardState(new BoardStateNode(this), newState, nextPlayer);
+
+            //TODO: handle captures
+
+            for (BoardStateNode node = newBoardState.Previous; node != null; node = node.Previous)
+            {
+                //repetition of a previous state is not allowed
+                if (node.State.CurrentPlayer == CurrentPlayer)
+                {
+                    if (Enumerable.SequenceEqual(
+                        newBoardState.state.Cast<IntersectionState>(),
+                        node.State.state.Cast<IntersectionState>()))
+                    {
+                        return null;
+                    }
+                }
+            }
+            return newBoardState;
         }
     }
 }

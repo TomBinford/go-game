@@ -71,7 +71,7 @@ namespace Go
             if (State.LeftClick())
             {
                 Point intersection = board.ClosestIntersection(State.CurrentMouseState.Position.ToVector2());
-                BoardState? nextState = board.State.MakePlay(intersection);
+                BoardState? nextState = board.State.MakePlay(Play.Move(intersection));
                 if(nextState.HasValue)
                 {
                     board.State = nextState.Value;
