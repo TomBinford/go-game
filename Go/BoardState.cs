@@ -114,25 +114,18 @@ namespace Go
 
         public List<StoneGroup> StoneGroups(bool includeEmpty)
         {
-            Stone[,] state = this.state; //Reference to state to let the inner function work
+            BoardState @this = this; //Make a copy because DFS can't capture a struct
             bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
 
-            void DFS(int row, int col, StoneGroup group)
+            void DFS(Point intersection, StoneGroup group)
             {
-                if (row < 0 || row >= state.GetLength(0) || col < 0 || col >= state.GetLength(1))
+                if (!visited[intersection.Y, intersection.X] && @this[intersection] == group.Stone)
                 {
-                    return;
-                }
-                if (!visited[row, col])
-                {
-                    if (state[row, col] == group.Stone)
+                    visited[intersection.Y, intersection.X] = true;
+                    group.Intersections.Add(intersection);
+                    foreach (Point adj in @this.Adjacencies(intersection))
                     {
-                        visited[row, col] = true;
-                        group.Intersections.Add(new Point(col, row)); //row is y, col is x
-                        DFS(row - 1, col, group);
-                        DFS(row + 1, col, group);
-                        DFS(row, col - 1, group);
-                        DFS(row, col + 1, group);
+                        DFS(adj, group);
                     }
                 }
             }
@@ -142,11 +135,12 @@ namespace Go
             {
                 for (int col = state.GetLowerBound(1); col < state.GetUpperBound(1); col++)
                 {
-                    if (includeEmpty || state[row, col] != Stone.Empty)
+                    Point intersection = new Point(col, row);
+                    if (includeEmpty || this[intersection] != Stone.Empty)
                     {
-                        StoneGroup group = new StoneGroup(state[row, col], new List<Point>());
-                        DFS(row, col, group);
-                        if (group.Intersections.Count > 0)
+                        StoneGroup group = new StoneGroup(this[intersection], new List<Point>());
+                        DFS(intersection, group);
+                        if (group.Intersections.Any())
                         {
                             groups.Add(group);
                         }
@@ -154,6 +148,16 @@ namespace Go
                 }
             }
             return groups;
+        }
+
+        private List<Point> Adjacencies(Point intersection)
+        {
+            return new List<Point>() {
+            new Point(intersection.X - 1, intersection.Y),
+            new Point(intersection.X + 1, intersection.Y),
+            new Point(intersection.X, intersection.Y - 1),
+            new Point(intersection.X, intersection.Y + 1)
+            }.Where(Contains).ToList();
         }
     }
 }
