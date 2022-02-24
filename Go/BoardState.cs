@@ -114,7 +114,7 @@ namespace Go
 
         public List<StoneGroup> StoneGroups(bool includeEmpty)
         {
-            BoardState @this = this; //Make a copy because DFS can't capture a struct
+            BoardState @this = this; //Make a copy because DFS can't capture this
             bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
 
             void DFS(Point intersection, StoneGroup group)
@@ -158,6 +158,33 @@ namespace Go
             new Point(intersection.X, intersection.Y - 1),
             new Point(intersection.X, intersection.Y + 1)
             }.Where(Contains).ToList();
+        }
+
+        public bool HasLiberties(Point intersection)
+        {
+            Stone stone = this[intersection];
+            if (stone == Stone.Empty)
+            {
+                return true;
+            }
+
+            BoardState @this = this; //Make a copy because DFS can't capture this
+            bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
+            bool DFS(Point intersection)
+            {
+                if (visited[intersection.Y, intersection.X])
+                {
+                    return false;
+                }
+                if (@this.Adjacencies(intersection).Any(i => @this[i] == Stone.Empty))
+                {
+                    return true;
+                }
+                visited[intersection.Y, intersection.X] = true;
+                return @this.Adjacencies(intersection).Where(i => @this[i] == stone).Any(DFS);
+            }
+
+            return DFS(intersection);
         }
     }
 }

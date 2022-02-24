@@ -103,6 +103,18 @@ namespace Go
                 spriteBatch.Draw(Pixel, board.IntersectionPosition(closestIntersection), null, Color.Red, 0, new Vector2(0.5f), 10f, SpriteEffects.None, 0);
             }
 
+            for (int x = 0; x < board.NumLines; x++)
+            {
+                for (int y = 0; y < board.NumLines; y++)
+                {
+                    Point intersection = new Point(x, y);
+                    if (!board.State.HasLiberties(intersection))
+                    {
+                        spriteBatch.Draw(Pixel, board.IntersectionPosition(intersection), null, new Color(255, 0, 0, 50), 0, new Vector2(0.5f), 25f, SpriteEffects.None, 0);
+                    }
+                }
+            }
+
             spriteBatch.Draw(playerTurnLabel);
             spriteBatch.Draw(passLabel);
 
