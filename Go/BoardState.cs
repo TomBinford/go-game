@@ -119,7 +119,7 @@ namespace Go
 
             void DFS(int row, int col, StoneGroup group)
             {
-                if (row < 0 || row > state.GetLength(0) || col < 0 || col > state.GetLength(1))
+                if (row < 0 || row >= state.GetLength(0) || col < 0 || col >= state.GetLength(1))
                 {
                     return;
                 }
