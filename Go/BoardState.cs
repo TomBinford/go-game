@@ -97,14 +97,11 @@ namespace Go
 
             Stone[,] newState = state.DeepCopy();
             newState[intersection.Y, intersection.X] = (Stone)CurrentPlayer;
-
-            //TODO: handle captures
-            var stoneGroups = StoneGroups(false);
             Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
             BoardState newBoardState = new BoardState(new BoardStateNode(this), newState, nextPlayer);
 
             //Remove stones of the opponent's color that do not have liberties (they are surrounded)
-            foreach (StoneGroup group in stoneGroups.Where(g => g.Stone == (Stone)nextPlayer))
+            foreach (StoneGroup group in newBoardState.StoneGroups((Stone)nextPlayer))
             {
                 //Only have to check one of the intersections because
                 //connected stones either all have liberties or all don't
@@ -119,8 +116,7 @@ namespace Go
 
             //Self-capture (removing liberties from one's own pieces) is prohibited
             //This can only be checked after the opponent's stones have been removed.
-            Player currentPlayer = CurrentPlayer; //Make a copy so lambda can capture it
-            foreach (StoneGroup group in newBoardState.StoneGroups(false).Where(g => g.Stone == (Stone)currentPlayer))
+            foreach (StoneGroup group in newBoardState.StoneGroups((Stone)CurrentPlayer))
             {
                 if (!newBoardState.HasLiberties(group.Intersections[0]))
                 {
@@ -139,7 +135,7 @@ namespace Go
             return newBoardState;
         }
 
-        public List<StoneGroup> StoneGroups(bool includeEmpty)
+        public List<StoneGroup> StoneGroups(params Stone[] wanted)
         {
             BoardState @this = this; //Make a copy because DFS can't capture this
             bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
@@ -163,7 +159,7 @@ namespace Go
                 for (int col = 0; col < state.GetLength(1); col++)
                 {
                     Point intersection = new Point(col, row);
-                    if (includeEmpty || this[intersection] != Stone.Empty)
+                    if (wanted.Contains(this[intersection]))
                     {
                         StoneGroup group = new StoneGroup(this[intersection], new List<Point>());
                         DFS(intersection, group);

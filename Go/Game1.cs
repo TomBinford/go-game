@@ -84,8 +84,8 @@ namespace Go
                 }
             }
 
-            //playerTurnLabel.Text = $"{board.State.CurrentPlayer} to move";
-            playerTurnLabel.Text = $"{board.State.StoneGroups(false).Count} stone groups";
+            playerTurnLabel.Text = $"{board.State.CurrentPlayer} to move";
+            playerTurnLabel.Text += $"\n{board.State.StoneGroups(Stone.Black, Stone.White).Count} stone groups";
 
             base.Update(gameTime);
         }
