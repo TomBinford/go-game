@@ -94,12 +94,28 @@ namespace Go
             {
                 return null;
             }
+
             Stone[,] newState = state.DeepCopy();
             newState[intersection.Y, intersection.X] = (Stone)CurrentPlayer;
+
+            //TODO: handle captures
+            var stoneGroups = StoneGroups(false);
             Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
             BoardState newBoardState = new BoardState(new BoardStateNode(this), newState, nextPlayer);
 
-            //TODO: handle captures
+            //Remove stones of the opponent's color that do not have liberties (they are surrounded)
+            foreach (StoneGroup group in stoneGroups.Where(g => g.Stone == (Stone)nextPlayer))
+            {
+                //Only have to check one of the intersections because connected stones
+                //either all have liberties or all don't
+                if (!newBoardState.HasLiberties(group.Intersections[0]))
+                {
+                    foreach (Point i in group.Intersections)
+                    {
+                        newState[i.Y, i.X] = Stone.Empty;
+                    }
+                }
+            }
 
             for (BoardStateNode node = newBoardState.Previous; node != null; node = node.Previous)
             {
@@ -131,9 +147,9 @@ namespace Go
             }
 
             List<StoneGroup> groups = new List<StoneGroup>();
-            for (int row = state.GetLowerBound(0); row < state.GetUpperBound(0); row++)
+            for (int row = 0; row < state.GetLength(0); row++)
             {
-                for (int col = state.GetLowerBound(1); col < state.GetUpperBound(1); col++)
+                for (int col = 0; col < state.GetLength(1); col++)
                 {
                     Point intersection = new Point(col, row);
                     if (includeEmpty || this[intersection] != Stone.Empty)
@@ -150,16 +166,9 @@ namespace Go
             return groups;
         }
 
-        private List<Point> Adjacencies(Point intersection)
-        {
-            return new List<Point>() {
-            new Point(intersection.X - 1, intersection.Y),
-            new Point(intersection.X + 1, intersection.Y),
-            new Point(intersection.X, intersection.Y - 1),
-            new Point(intersection.X, intersection.Y + 1)
-            }.Where(Contains).ToList();
-        }
-
+        //A stone has a liberty if it is:
+        // -adjacent to an empty intersection
+        // -or connected to a stone with a liberty
         public bool HasLiberties(Point intersection)
         {
             Stone stone = this[intersection];
@@ -185,6 +194,16 @@ namespace Go
             }
 
             return DFS(intersection);
+        }
+
+        private List<Point> Adjacencies(Point intersection)
+        {
+            return new List<Point>() {
+            new Point(intersection.X - 1, intersection.Y),
+            new Point(intersection.X + 1, intersection.Y),
+            new Point(intersection.X, intersection.Y - 1),
+            new Point(intersection.X, intersection.Y + 1)
+            }.Where(Contains).ToList();
         }
     }
 }
