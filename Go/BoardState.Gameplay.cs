@@ -13,16 +13,47 @@ namespace Go
             {
                 if (!Terminal)
                 {
-                    return Player.None;
+                    throw new InvalidOperationException("Game is not finished");
                 }
                 //TODO: count territory belonging to both players
-                throw new NotImplementedException();
+                List<StoneGroup> black = StoneGroups(Stone.Black);
+                List<StoneGroup> white = StoneGroups(Stone.White);
+                List<StoneGroup> empty = StoneGroups(Stone.Empty);
+                int blackTerritory = black.Sum(g => g.Intersections.Count);
+                int whiteTerritory = white.Sum(g => g.Intersections.Count);
+                BoardState @this = this; //Copy so the lambda can capture
+                foreach (StoneGroup group in empty)
+                {
+                    bool touchesBlack = group.Intersections.SelectMany(i => @this.Adjacencies(i)).Any(i => @this[i] == Stone.Black);
+                    bool touchesWhite = group.Intersections.SelectMany(i => @this.Adjacencies(i)).Any(i => @this[i] == Stone.White);
+                    if (touchesWhite && !touchesBlack)
+                    {
+                        whiteTerritory += group.Intersections.Count;
+                    }
+                    else if (touchesBlack && !touchesWhite)
+                    {
+                        blackTerritory += group.Intersections.Count;
+                    }
+                }
+
+                if (blackTerritory > whiteTerritory)
+                {
+                    return Player.Black;
+                }
+                else if (whiteTerritory > blackTerritory)
+                {
+                    return Player.White;
+                }
+                else
+                {
+                    return Player.None;
+                }
             }
         }
 
         public BoardState? MakePlay(Play play)
         {
-            if(Terminal) //Prevent plays after finishing the game
+            if (Terminal) //Prevent plays after finishing the game
             {
                 return null;
             }

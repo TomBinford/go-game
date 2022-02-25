@@ -88,14 +88,21 @@ namespace Go
                 }
             }
 
-            if (board.State.Winner == Player.None)
+            if (board.State.Terminal)
             {
-                statusLabel.Text = $"{board.State.CurrentPlayer} to move";
-                statusLabel.Text += $"\n{board.State.StoneGroups(Stone.Black, Stone.White).Count} stone groups";
+                if(board.State.Winner == Player.None)
+                {
+                    statusLabel.Text = "Game is a draw";
+                }
+                else
+                {
+                    statusLabel.Text = $"Player {board.State.Winner} wins!";
+                }
             }
             else
             {
-                statusLabel.Text = $"Player {board.State.Winner} wins!";
+                statusLabel.Text = $"{board.State.CurrentPlayer} to move";
+                statusLabel.Text += $"\n{board.State.StoneGroups(Stone.Black, Stone.White).Count} stone groups";
             }
 
             base.Update(gameTime);
