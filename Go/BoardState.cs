@@ -106,14 +106,25 @@ namespace Go
             //Remove stones of the opponent's color that do not have liberties (they are surrounded)
             foreach (StoneGroup group in stoneGroups.Where(g => g.Stone == (Stone)nextPlayer))
             {
-                //Only have to check one of the intersections because connected stones
-                //either all have liberties or all don't
+                //Only have to check one of the intersections because
+                //connected stones either all have liberties or all don't
                 if (!newBoardState.HasLiberties(group.Intersections[0]))
                 {
                     foreach (Point i in group.Intersections)
                     {
                         newState[i.Y, i.X] = Stone.Empty;
                     }
+                }
+            }
+
+            //Self-capture (removing liberties from one's own pieces) is prohibited
+            //This can only be checked after the opponent's stones have been removed.
+            Player currentPlayer = CurrentPlayer; //Make a copy so lambda can capture it
+            foreach (StoneGroup group in newBoardState.StoneGroups(false).Where(g => g.Stone == (Stone)currentPlayer))
+            {
+                if (!newBoardState.HasLiberties(group.Intersections[0]))
+                {
+                    return null;
                 }
             }
 
