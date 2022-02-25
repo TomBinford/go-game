@@ -7,12 +7,31 @@ namespace Go
 {
     partial struct BoardState
     {
+        public Player Winner
+        {
+            get
+            {
+                if (!Terminal)
+                {
+                    return Player.None;
+                }
+                //TODO: count territory belonging to both players
+                throw new NotImplementedException();
+            }
+        }
+
         public BoardState? MakePlay(Play play)
         {
+            if(Terminal) //Prevent plays after finishing the game
+            {
+                return null;
+            }
             if (play is PassPlay)
             {
                 Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
-                return new BoardState(new BoardStateNode(this), state.DeepCopy(), nextPlayer);
+                //Two passes in a row ends the game
+                bool terminal = WasPass;
+                return new BoardState(new BoardStateNode(this), state.DeepCopy(), nextPlayer, wasPass: true, terminal);
             }
             else if (play is MovePlay move)
             {
@@ -140,7 +159,7 @@ namespace Go
             return DFS(intersection);
         }
 
-        private List<Point> Adjacencies(Point intersection)
+        private IEnumerable<Point> Adjacencies(Point intersection)
         {
             return new List<Point>() {
             new Point(intersection.X - 1, intersection.Y),

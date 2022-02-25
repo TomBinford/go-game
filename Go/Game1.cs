@@ -16,7 +16,7 @@ namespace Go
         SpriteFont font;
 
         Board board;
-        Label playerTurnLabel;
+        Label statusLabel;
         Label passLabel;
 
         static Game1()
@@ -52,7 +52,7 @@ namespace Go
             // TODO: use this.Content to load your game content here
             font = Content.Load<SpriteFont>("Font");
             board = new Board(new Rectangle(50, 50, 9 * 80, 9 * 80), 9, Color.BurlyWood, Color.Black, 2);
-            playerTurnLabel = new Label(font, "Player to move", new Vector2(board.Bounds.Right + 50, board.Bounds.Top), Color.Pink, 1.5f);
+            statusLabel = new Label(font, "Player to move", new Vector2(board.Bounds.Right + 50, board.Bounds.Top), Color.Pink, 1.5f);
             passLabel = new Label(font, "Pass", new Vector2(board.Bounds.Right + 50, board.Bounds.Bottom - 50), Color.Cornsilk, 1f);
         }
 
@@ -72,7 +72,11 @@ namespace Go
             // TODO: Add your update logic here
             if (passLabel.LeftClicked())
             {
-                board.State = board.State.MakePlay(Play.Pass()) ?? board.State;
+                BoardState? nextState = board.State.MakePlay(Play.Pass());
+                if(nextState.HasValue)
+                {
+                    board.State = nextState.Value;
+                }
             }
             else if (State.LeftClick())
             {
@@ -84,8 +88,15 @@ namespace Go
                 }
             }
 
-            playerTurnLabel.Text = $"{board.State.CurrentPlayer} to move";
-            playerTurnLabel.Text += $"\n{board.State.StoneGroups(Stone.Black, Stone.White).Count} stone groups";
+            if (board.State.Winner == Player.None)
+            {
+                statusLabel.Text = $"{board.State.CurrentPlayer} to move";
+                statusLabel.Text += $"\n{board.State.StoneGroups(Stone.Black, Stone.White).Count} stone groups";
+            }
+            else
+            {
+                statusLabel.Text = $"Player {board.State.Winner} wins!";
+            }
 
             base.Update(gameTime);
         }
@@ -115,7 +126,7 @@ namespace Go
                 }
             }
 
-            spriteBatch.Draw(playerTurnLabel);
+            spriteBatch.Draw(statusLabel);
             spriteBatch.Draw(passLabel);
 
             spriteBatch.End();

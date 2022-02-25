@@ -33,12 +33,16 @@ namespace Go
         public Stone this[int x, int y] => state[y, x]; //row, column
         public Stone this[Point intersection] => this[intersection.X, intersection.Y];
         public Player CurrentPlayer { get; }
+        public bool WasPass { get; }
+        public bool Terminal { get; }
 
-        private BoardState(BoardStateNode previous, Stone[,] state, Player player)
+        private BoardState(BoardStateNode previous, Stone[,] state, Player player, bool wasPass = false, bool terminal = false)
         {
             Previous = previous;
             this.state = state;
             CurrentPlayer = player;
+            WasPass = wasPass;
+            Terminal = terminal;
         }
 
         public BoardState(int numLines, Player firstPlayer)
