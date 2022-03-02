@@ -1,6 +1,7 @@
 ﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
 
 namespace Go
 {
@@ -15,6 +16,7 @@ namespace Go
 
         SpriteFont font;
 
+        const int boardLines = 9;
         Board board;
         Label statusLabel;
         Label passLabel;
@@ -51,7 +53,7 @@ namespace Go
 
             // TODO: use this.Content to load your game content here
             font = Content.Load<SpriteFont>("Font");
-            board = new Board(new Rectangle(50, 50, 9 * 80, 9 * 80), 9, Color.BurlyWood, Color.Black, 2);
+            board = new Board(new Rectangle(50, 50, 9 * 80, 9 * 80), boardLines, Color.BurlyWood, Color.Black, 2);
             statusLabel = new Label(font, "Player to move", new Vector2(board.Bounds.Right + 50, board.Bounds.Top), Color.Pink, 1.5f);
             passLabel = new Label(font, "Pass", new Vector2(board.Bounds.Right + 50, board.Bounds.Bottom - 50), Color.Cornsilk, 1f);
         }
@@ -66,16 +68,24 @@ namespace Go
             if (Keyboard.GetState().IsKeyDown(Keys.Escape))
             {
                 Exit();
+                return;
             }
             State.Update();
 
             // TODO: Add your update logic here
             if (passLabel.LeftClicked())
             {
-                BoardState? nextState = board.State.MakePlay(Play.Pass());
-                if(nextState.HasValue)
+                if (!board.State.Terminal)
                 {
-                    board.State = nextState.Value;
+                    BoardState? nextState = board.State.MakePlay(Play.Pass());
+                    if (nextState.HasValue)
+                    {
+                        board.State = nextState.Value;
+                    }
+                }
+                else
+                {
+                    board.State = new BoardState(boardLines, firstPlayer: Player.Black);
                 }
             }
             else if (State.LeftClick())
@@ -90,13 +100,14 @@ namespace Go
 
             if (board.State.Terminal)
             {
-                if(board.State.Winner == Player.None)
+                if (board.State.Winner == Player.None)
                 {
                     statusLabel.Text = "Game is a draw";
                 }
                 else
                 {
                     statusLabel.Text = $"Player {board.State.Winner} wins!";
+                    passLabel.Text = "Play Again";
                 }
             }
             else
@@ -107,7 +118,7 @@ namespace Go
 
             base.Update(gameTime);
         }
-        
+
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);

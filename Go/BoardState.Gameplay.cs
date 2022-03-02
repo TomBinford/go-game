@@ -7,6 +7,24 @@ namespace Go
 {
     partial struct BoardState
     {
+        private int Territory(Stone stone)
+        {
+            int territory = StoneGroups(stone).Sum(g => g.Intersections.Count);
+            BoardState @this = this; //Copy so the lambda can capture
+
+            foreach (StoneGroup group in StoneGroups(Stone.Empty))
+            {
+                IEnumerable<Point> touchingIntersections = group.Intersections.SelectMany(i => @this.Adjacencies(i));
+                bool touchesStone = touchingIntersections.Any(i => @this[i] == stone);
+                bool touchesOther = touchingIntersections.Any(i => @this[i] == Opposite(stone));
+                if (touchesStone && !touchesOther)
+                {
+                    territory += group.Intersections.Count;
+                }
+            }
+            return territory;
+        }
+
         public Player Winner
         {
             get
@@ -15,26 +33,9 @@ namespace Go
                 {
                     throw new InvalidOperationException("Game is not finished");
                 }
-                //TODO: count territory belonging to both players
-                List<StoneGroup> black = StoneGroups(Stone.Black);
-                List<StoneGroup> white = StoneGroups(Stone.White);
-                List<StoneGroup> empty = StoneGroups(Stone.Empty);
-                int blackTerritory = black.Sum(g => g.Intersections.Count);
-                int whiteTerritory = white.Sum(g => g.Intersections.Count);
-                BoardState @this = this; //Copy so the lambda can capture
-                foreach (StoneGroup group in empty)
-                {
-                    bool touchesBlack = group.Intersections.SelectMany(i => @this.Adjacencies(i)).Any(i => @this[i] == Stone.Black);
-                    bool touchesWhite = group.Intersections.SelectMany(i => @this.Adjacencies(i)).Any(i => @this[i] == Stone.White);
-                    if (touchesWhite && !touchesBlack)
-                    {
-                        whiteTerritory += group.Intersections.Count;
-                    }
-                    else if (touchesBlack && !touchesWhite)
-                    {
-                        blackTerritory += group.Intersections.Count;
-                    }
-                }
+
+                int blackTerritory = Territory(Stone.Black);
+                int whiteTerritory = Territory(Stone.White);
 
                 if (blackTerritory > whiteTerritory)
                 {
@@ -57,21 +58,20 @@ namespace Go
             {
                 return null;
             }
-            if (play is PassPlay)
+            return play switch
             {
-                Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
-                //Two passes in a row ends the game
-                bool terminal = WasPass;
-                return new BoardState(new BoardStateNode(this), state.DeepCopy(), nextPlayer, wasPass: true, terminal);
-            }
-            else if (play is MovePlay move)
-            {
-                return MakeMove(move);
-            }
-            else
-            {
-                throw new InvalidOperationException();
-            }
+                PassPlay p => MakePass(p),
+                MovePlay m => MakeMove(m),
+                _ => throw new InvalidOperationException()
+            };
+        }
+
+        private BoardState? MakePass(PassPlay pass)
+        {
+            Player nextPlayer = Opposite(CurrentPlayer);
+            //Two passes in a row ends the game
+            bool terminal = WasPass;
+            return new BoardState(new BoardStateNode(this), state.DeepCopy(), nextPlayer, wasPass: true, terminal);
         }
 
         private BoardState? MakeMove(MovePlay move)
@@ -84,7 +84,7 @@ namespace Go
 
             Stone[,] newState = state.DeepCopy();
             newState[intersection.Y, intersection.X] = (Stone)CurrentPlayer;
-            Player nextPlayer = CurrentPlayer == Player.Black ? Player.White : Player.Black;
+            Player nextPlayer = Opposite(CurrentPlayer);
             BoardState newBoardState = new BoardState(new BoardStateNode(this), newState, nextPlayer);
 
             //Remove stones of the opponent's color that do not have liberties (they are surrounded)
@@ -199,5 +199,19 @@ namespace Go
             new Point(intersection.X, intersection.Y + 1)
             }.Where(Contains).ToList();
         }
+
+        private static Stone Opposite(Stone stone) => stone switch
+        {
+            Stone.Black => Stone.White,
+            Stone.White => Stone.Black,
+            _ => throw new InvalidOperationException($"{stone} has no opposite")
+        };
+
+        private static Player Opposite(Player player) => player switch
+        {
+            Player.Black => Player.White,
+            Player.White => Player.Black,
+            _ => throw new InvalidOperationException($"{player} has no opposite")
+        };
     }
 }
