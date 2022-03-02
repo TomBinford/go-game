@@ -36,7 +36,6 @@ namespace Go
 
                 int blackTerritory = Territory(Stone.Black);
                 int whiteTerritory = Territory(Stone.White);
-
                 if (blackTerritory > whiteTerritory)
                 {
                     return Player.Black;
@@ -179,12 +178,12 @@ namespace Go
                 {
                     return false;
                 }
-                if (@this.Adjacencies(intersection).Any(i => @this[i] == Stone.Empty))
+                if (@this.Adjacencies(intersection, Stone.Empty).Any())
                 {
                     return true;
                 }
                 visited[intersection.Y, intersection.X] = true;
-                return @this.Adjacencies(intersection).Where(i => @this[i] == stone).Any(DFS);
+                return @this.Adjacencies(intersection, stone).Any(DFS);
             }
 
             return DFS(intersection);
@@ -198,6 +197,12 @@ namespace Go
             new Point(intersection.X, intersection.Y - 1),
             new Point(intersection.X, intersection.Y + 1)
             }.Where(Contains).ToList();
+        }
+
+        private IEnumerable<Point> Adjacencies(Point intersection, Stone stone)
+        {
+            BoardState @this = this;
+            return Adjacencies(intersection).Where(i => @this[i] == stone);
         }
 
         private static Stone Opposite(Stone stone) => stone switch
