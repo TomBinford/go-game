@@ -14,29 +14,17 @@ namespace Go
         Black = Stone.Black
     }
 
-    class BoardStateNode
+    partial class BoardState
     {
-        public BoardState State { get; }
-        public BoardStateNode Previous { get; }
-
-        public BoardStateNode(BoardState state)
-        {
-            State = state;
-            Previous = state.Previous;
-        }
-    }
-
-    partial struct BoardState
-    {
-        public BoardStateNode Previous { get; }
+        public BoardState Previous { get; }
         private readonly Stone[,] state;
-        public Stone this[int x, int y] => state[y, x]; //row, column
-        public Stone this[Point intersection] => this[intersection.X, intersection.Y];
+        public Stone this[int y, int x] => state[y, x];
+        public Stone this[Point intersection] => this[intersection.Y, intersection.X]; //row, column
         public Player CurrentPlayer { get; }
         public bool WasPass { get; }
         public bool Terminal { get; }
 
-        private BoardState(BoardStateNode previous, Stone[,] state, Player player, bool wasPass = false, bool terminal = false)
+        private BoardState(BoardState previous, Stone[,] state, Player player, bool wasPass = false, bool terminal = false)
         {
             Previous = previous;
             this.state = state;
@@ -64,9 +52,6 @@ namespace Go
         }
 
         public override int GetHashCode() => HashCode.Combine(CurrentPlayer, state);
-
-        public static bool operator ==(BoardState a, BoardState b) => a.Equals(b);
-        public static bool operator !=(BoardState a, BoardState b) => !a.Equals(b);
 
         public bool Contains(Point intersection)
         {

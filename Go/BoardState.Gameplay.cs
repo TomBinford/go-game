@@ -5,18 +5,17 @@ using System.Linq;
 
 namespace Go
 {
-    partial struct BoardState
+    partial class BoardState
     {
         private int Territory(Stone stone)
         {
             int territory = StoneGroups(stone).Sum(g => g.Intersections.Count);
-            BoardState @this = this; //Copy so the lambda can capture
 
             foreach (StoneGroup group in StoneGroups(Stone.Empty))
             {
-                IEnumerable<Point> touchingIntersections = group.Intersections.SelectMany(i => @this.Adjacencies(i));
-                bool touchesStone = touchingIntersections.Any(i => @this[i] == stone);
-                bool touchesOther = touchingIntersections.Any(i => @this[i] == Opposite(stone));
+                IEnumerable<Point> touchingIntersections = group.Intersections.SelectMany(i => Adjacencies(i));
+                bool touchesStone = touchingIntersections.Any(i => this[i] == stone);
+                bool touchesOther = touchingIntersections.Any(i => this[i] == Opposite(stone));
                 if (touchesStone && !touchesOther)
                 {
                     territory += group.Intersections.Count;
@@ -51,7 +50,7 @@ namespace Go
             }
         }
 
-        public BoardState? MakePlay(Play play)
+        public BoardState MakePlay(Play play)
         {
             if (Terminal) //Prevent plays after finishing the game
             {
@@ -65,15 +64,15 @@ namespace Go
             };
         }
 
-        private BoardState? MakePass(PassPlay pass)
+        private BoardState MakePass(PassPlay _)
         {
             Player nextPlayer = Opposite(CurrentPlayer);
             //Two passes in a row ends the game
             bool terminal = WasPass;
-            return new BoardState(new BoardStateNode(this), state.DeepCopy(), nextPlayer, wasPass: true, terminal);
+            return new BoardState(this, state.DeepCopy(), nextPlayer, wasPass: true, terminal);
         }
 
-        private BoardState? MakeMove(MovePlay move)
+        private BoardState MakeMove(MovePlay move)
         {
             Point intersection = move.Intersection;
             if (!Contains(intersection) || this[intersection] != Stone.Empty)
@@ -84,7 +83,7 @@ namespace Go
             Stone[,] newState = state.DeepCopy();
             newState[intersection.Y, intersection.X] = (Stone)CurrentPlayer;
             Player nextPlayer = Opposite(CurrentPlayer);
-            BoardState newBoardState = new BoardState(new BoardStateNode(this), newState, nextPlayer);
+            BoardState newBoardState = new BoardState(this, newState, nextPlayer);
 
             //Remove stones of the opponent's color that do not have liberties (they are surrounded)
             foreach (StoneGroup group in newBoardState.StoneGroups((Stone)nextPlayer))
@@ -110,10 +109,10 @@ namespace Go
                 }
             }
 
-            for (BoardStateNode node = newBoardState.Previous; node != null; node = node.Previous)
+            for (BoardState prev = newBoardState.Previous; prev != null; prev = prev.Previous)
             {
                 //repetition of a previous state is not allowed
-                if (node.State.Equals(newState))
+                if (prev.Equals(newState))
                 {
                     return null;
                 }
@@ -123,16 +122,15 @@ namespace Go
 
         public List<StoneGroup> StoneGroups(params Stone[] wanted)
         {
-            BoardState @this = this; //Make a copy because DFS can't capture this
             bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
 
             void DFS(Point intersection, StoneGroup group)
             {
-                if (!visited[intersection.Y, intersection.X] && @this[intersection] == group.Stone)
+                if (!visited[intersection.Y, intersection.X] && this[intersection] == group.Stone)
                 {
                     visited[intersection.Y, intersection.X] = true;
                     group.Intersections.Add(intersection);
-                    foreach (Point adj in @this.Adjacencies(intersection))
+                    foreach (Point adj in Adjacencies(intersection))
                     {
                         DFS(adj, group);
                     }
@@ -170,7 +168,6 @@ namespace Go
                 return true;
             }
 
-            BoardState @this = this; //Make a copy because DFS can't capture this
             bool[,] visited = new bool[state.GetLength(0), state.GetLength(1)];
             bool DFS(Point intersection)
             {
@@ -178,12 +175,12 @@ namespace Go
                 {
                     return false;
                 }
-                if (@this.Adjacencies(intersection, Stone.Empty).Any())
+                if (Adjacencies(intersection, Stone.Empty).Any())
                 {
                     return true;
                 }
                 visited[intersection.Y, intersection.X] = true;
-                return @this.Adjacencies(intersection, stone).Any(DFS);
+                return Adjacencies(intersection, stone).Any(DFS);
             }
 
             return DFS(intersection);
@@ -199,11 +196,8 @@ namespace Go
             }.Where(Contains).ToList();
         }
 
-        private IEnumerable<Point> Adjacencies(Point intersection, Stone stone)
-        {
-            BoardState @this = this;
-            return Adjacencies(intersection).Where(i => @this[i] == stone);
-        }
+        private IEnumerable<Point> Adjacencies(Point intersection, Stone stone) =>
+            Adjacencies(intersection).Where(i => this[i] == stone);
 
         private static Stone Opposite(Stone stone) => stone switch
         {
